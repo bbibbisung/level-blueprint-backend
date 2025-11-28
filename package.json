@@ -1,0 +1,15 @@
+{
+  "name": "level-blueprint-backend",
+  "version": "1.0.0",
+  "description": "Backend for Level Blueprint Generator (Itch.io tool)",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "node-fetch": "^3.3.2"
+  }
+}
