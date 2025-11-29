@@ -214,8 +214,15 @@ Example format (adapt this to each specific level):
 }
 \`\`\`
 
-RULES FOR LAYOUT DATA:
-- Always include this \`Level Layout Data (for Visualizer)\` section for every level.
+RULES FOR LAYOUT DATA (MANDATORY):
+- For EVERY level you create, you MUST include:
+  - at least 2 doors in the \`doors\` array,
+  - at least 1 window in the \`windows\` array,
+  - at least 2 props in the \`props\` array,
+  - at least 2 enemySpawns in the \`enemySpawns\` array.
+- These elements must be placed in different rooms where it makes sense
+  and must reflect the flow, encounters and narrative described above.
+- Never omit these arrays and never leave them empty.
 - Use integer grid coordinates for x, y, w, h (small values like 0–30).
 - Place rooms so they roughly reflect the described flow and do not heavily overlap.
 - Use usually 4–10 rooms per level (can be fewer if the level is intentionally tiny).
@@ -235,9 +242,6 @@ RULES FOR LAYOUT DATA:
 - For "props" and "enemySpawns":
   - "x" and "y" are in room-local grid units (0.0 ~ room.w, 0.0 ~ room.h).
   - Use small, readable values (e.g. 0.5, 1.0, 2.0, etc.).
-- If a level does not need a certain feature, you may either:
-  - provide an empty array (e.g. "doors": []), or
-  - omit that field entirely.
 
 RULES:
 - Always respect the requested genre, camera type, difficulty target and focus.
@@ -303,8 +307,9 @@ Constraints:
 - Keep the tone professional (for internal design docs), but still readable.
 - For every level, you MUST also include the 'Level Layout Data (for Visualizer)'
   section at the end, with a valid \`level-json\` block that approximates a
-  top-down layout of the described level, including rooms, connections and,
-  when appropriate, simple doors, windows, props and enemySpawns data.
+  top-down layout of the described level, including:
+  - rooms and connections,
+  - AND at least a few doors, windows, props, and enemySpawns that match the gameplay.
 `.trim();
 
     const apiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
