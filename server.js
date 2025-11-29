@@ -220,9 +220,13 @@ RULES FOR LAYOUT DATA (MANDATORY):
   - at least 1 window in the \`windows\` array,
   - at least 2 props in the \`props\` array,
   - at least 2 enemySpawns in the \`enemySpawns\` array.
-- These elements must be placed in different rooms where it makes sense
-  and must reflect the flow, encounters and narrative described above.
 - Never omit these arrays and never leave them empty.
+- These elements must be placed in different rooms where it makes sense
+  and must reflect the flow, encounters, cover positions and narrative described above.
+- All level layout data MUST be valid JSON:
+  - no trailing commas,
+  - double quotes for all keys and string values,
+  - numeric values only for coordinates.
 - Use integer grid coordinates for x, y, w, h (small values like 0–30).
 - Place rooms so they roughly reflect the described flow and do not heavily overlap.
 - Use usually 4–10 rooms per level (can be fewer if the level is intentionally tiny).
@@ -310,6 +314,7 @@ Constraints:
   top-down layout of the described level, including:
   - rooms and connections,
   - AND at least a few doors, windows, props, and enemySpawns that match the gameplay.
+- Never omit the \`doors\`, \`windows\`, \`props\`, or \`enemySpawns\` arrays. Each must contain data.
 `.trim();
 
     const apiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
