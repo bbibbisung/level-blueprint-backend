@@ -1,3 +1,5 @@
+// server.js
+
 import express from "express";
 import cors from "cors";
 import fetch from "node-fetch";
@@ -8,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// ===== 고급형 SYSTEM PROMPT (Visualizer용 Level Layout Data 추가 버전) =====
+// ===== 고급형 SYSTEM PROMPT (Visualizer용 Level Layout Data v1.1 버전) =====
 const SYSTEM_PROMPT = `
 You are a senior game level designer and lead designer mentor.
 Your job is to generate *production-ready* level blueprints for indie / AA teams.
@@ -108,9 +110,10 @@ Example format (adapt this to each specific level):
 
 \`\`\`level-json
 {
-  "specVersion": "1.0",
+  "specVersion": "1.1",
   "theme": "toy_factory",
   "flowType": "linear",
+
   "rooms": [
     {
       "id": "R1",
@@ -140,16 +143,72 @@ Example format (adapt this to each specific level):
       "h": 5
     }
   ],
+
   "connections": [
     {
       "from": "R1",
       "to": "R2",
-      "type": "corridor"
+      "type": "corridor",
+      "mainPath": true
     },
     {
       "from": "R2",
       "to": "R3",
-      "type": "arena_gate"
+      "type": "arena_gate",
+      "mainPath": true
+    }
+  ],
+
+  "doors": [
+    {
+      "id": "D1",
+      "roomId": "R2",
+      "side": "east",
+      "offset": 0.5,
+      "kind": "standard"
+    }
+  ],
+
+  "windows": [
+    {
+      "id": "W1",
+      "roomId": "R3",
+      "side": "north",
+      "offset": 0.3
+    }
+  ],
+
+  "props": [
+    {
+      "id": "P1",
+      "roomId": "R2",
+      "x": 1.5,
+      "y": 1.0,
+      "category": "table"
+    },
+    {
+      "id": "P2",
+      "roomId": "R3",
+      "x": 2.5,
+      "y": 1.5,
+      "category": "cover_pillar"
+    }
+  ],
+
+  "enemySpawns": [
+    {
+      "id": "E1",
+      "roomId": "R2",
+      "x": 2.0,
+      "y": 1.2,
+      "role": "chaser"
+    },
+    {
+      "id": "E2",
+      "roomId": "R3",
+      "x": 3.0,
+      "y": 2.0,
+      "role": "bruiser"
     }
   ]
 }
@@ -163,9 +222,22 @@ RULES FOR LAYOUT DATA:
 - "theme" should be a short token-like string that reflects the setting,
   for example: "toy_factory", "abandoned_lab", "gothic_dungeon", "industrial_factory".
 - "flowType" should match the Layout Archetype when possible:
-  - linear, branching, loop, hub, arena, semilinear, etc.
+  - linear, branching, looping, hub, arena, semilinear, etc.
 - "type" for rooms should be chosen from:
   - spawn, combat, puzzle, hub, boss, treasure, corridor, safe, checkpoint.
+- For "connections":
+  - Always include "from", "to", and "type".
+  - Use "mainPath": true for connections that belong to the main critical path.
+- For "doors" and "windows":
+  - "roomId" must match one of the room ids.
+  - "side" is one of: "north", "south", "east", "west".
+  - "offset" is a number between 0.0 and 1.0, meaning position along that side.
+- For "props" and "enemySpawns":
+  - "x" and "y" are in room-local grid units (0.0 ~ room.w, 0.0 ~ room.h).
+  - Use small, readable values (e.g. 0.5, 1.0, 2.0, etc.).
+- If a level does not need a certain feature, you may either:
+  - provide an empty array (e.g. "doors": []), or
+  - omit that field entirely.
 
 RULES:
 - Always respect the requested genre, camera type, difficulty target and focus.
@@ -231,13 +303,14 @@ Constraints:
 - Keep the tone professional (for internal design docs), but still readable.
 - For every level, you MUST also include the 'Level Layout Data (for Visualizer)'
   section at the end, with a valid \`level-json\` block that approximates a
-  top-down layout of the described level.
+  top-down layout of the described level, including rooms, connections and,
+  when appropriate, simple doors, windows, props and enemySpawns data.
 `.trim();
 
     const apiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${apiKey.trim()}`, // ★ 항상 요청에 실린 키 사용
+        "Authorization": `Bearer ${apiKey.trim()}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
