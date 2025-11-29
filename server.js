@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// ===== 고급형 SYSTEM PROMPT =====
+// ===== 고급형 SYSTEM PROMPT (Visualizer용 Level Layout Data 추가 버전) =====
 const SYSTEM_PROMPT = `
 You are a senior game level designer and lead designer mentor.
 Your job is to generate *production-ready* level blueprints for indie / AA teams.
@@ -100,6 +100,73 @@ Respond in Markdown. For each level, use this structure exactly:
 - Implementation Risks: (what could break or take unexpectedly long)
 - Recommended Prototype Order: (what to build first when time is limited)
 
+### 11. Level Layout Data (for Visualizer)
+After all design notes, add a machine-readable layout block for each level
+using the following JSON schema, inside a fenced code block labeled \`level-json\`.
+
+Example format (adapt this to each specific level):
+
+\`\`\`level-json
+{
+  "specVersion": "1.0",
+  "theme": "toy_factory",
+  "flowType": "linear",
+  "rooms": [
+    {
+      "id": "R1",
+      "label": "Start Alley",
+      "type": "spawn",
+      "x": 0,
+      "y": 0,
+      "w": 4,
+      "h": 3
+    },
+    {
+      "id": "R2",
+      "label": "Main Corridor Loop",
+      "type": "combat",
+      "x": 6,
+      "y": 0,
+      "w": 6,
+      "h": 4
+    },
+    {
+      "id": "R3",
+      "label": "Courtyard Arena",
+      "type": "boss",
+      "x": 14,
+      "y": 0,
+      "w": 7,
+      "h": 5
+    }
+  ],
+  "connections": [
+    {
+      "from": "R1",
+      "to": "R2",
+      "type": "corridor"
+    },
+    {
+      "from": "R2",
+      "to": "R3",
+      "type": "arena_gate"
+    }
+  ]
+}
+\`\`\`
+
+RULES FOR LAYOUT DATA:
+- Always include this \`Level Layout Data (for Visualizer)\` section for every level.
+- Use integer grid coordinates for x, y, w, h (small values like 0–30).
+- Place rooms so they roughly reflect the described flow and do not heavily overlap.
+- Use usually 4–10 rooms per level (can be fewer if the level is intentionally tiny).
+- "theme" should be a short token-like string that reflects the setting,
+  for example: "toy_factory", "abandoned_lab", "gothic_dungeon", "industrial_factory".
+- "flowType" should match the Layout Archetype when possible:
+  - linear, branching, loop, hub, arena, semilinear, etc.
+- "type" for rooms should be chosen from:
+  - spawn, combat, puzzle, hub, boss, treasure, corridor, safe, checkpoint.
+
 RULES:
 - Always respect the requested genre, camera type, difficulty target and focus.
 - Ideas must be implementable in common engines (Unity/Unreal/Godot/RPG Maker).
@@ -162,6 +229,9 @@ Constraints:
 - Each level should feel distinct from the others.
 - Use the output structure defined in the system prompt.
 - Keep the tone professional (for internal design docs), but still readable.
+- For every level, you MUST also include the 'Level Layout Data (for Visualizer)'
+  section at the end, with a valid \`level-json\` block that approximates a
+  top-down layout of the described level.
 `.trim();
 
     const apiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
